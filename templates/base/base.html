@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}E-commerce Site{% endblock %}</title>
+
+</head>
+<body>
+    <header>
+        <h1>E-commerce Site</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'store-home' %}">Home</a></li>
+                <li><a href="{% url 'authapp-login' %}">Login</a></li>
+                <li><a href="{% url 'authapp-register' %}">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+        <h2>Welcome to the E-commerce Site</h2>
+        <p>Your one-stop shop for all things awesome!</p>
+        {% endblock %}
+    </main>
+   
+</body>
+</html>
