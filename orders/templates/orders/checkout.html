@@ -1,0 +1,47 @@
+{% extends 'base/base.html' %}
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Checkout</h1>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h3>Your Order</h3>
+            {% for item in cart_items %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h6>{{ item.product.name }}</h6>
+                    <p>Quantity: {{ item.quantity }} | Price: ${{ item.product.price }}</p>
+                    <p><strong>Subtotal: ${{ item.total_price }}</strong></p>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5>Total: ${{ total_amount }}</h5>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <h3>Shipping Information</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="address" class="form-label">Shipping Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

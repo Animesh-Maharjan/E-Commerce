@@ -1,0 +1,16 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Customer Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Welcome {{ user.first_name }}!</h2>
+    <p>This is your Customer Dashboard.</p>
+
+    <div class="list-group">
+        <a href="{% url 'store-shop' %}" class="list-group-item list-group-item-action">Browse Products</a>
+        <a href="{% url 'cart-view' %}" class="list-group-item list-group-item-action">View Cart</a>
+        <a href="{% url 'order-list' %}" class="list-group-item list-group-item-action">My Orders</a>
+    </div>
+</div>
+{% endblock %}

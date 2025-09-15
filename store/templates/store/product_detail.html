@@ -1,0 +1,60 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}">
+            {% else %}
+            <img src="https://via.placeholder.com/500x400" class="img-fluid" alt="No Image">
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+            <p>{{ product.description }}</p>
+            <p><strong>Price:</strong> ${{ product.price }}</p>
+            <p><strong>Stock:</strong> 
+                {% if product.stock > 0 %}
+                    {{ product.stock }} available
+                {% else %}
+                    Out of stock
+                {% endif %}
+            </p>
+
+            {% if user.is_authenticated and user.role == 'customer' and product.stock > 0 %}
+            <a href="{% url 'add-to-cart' product.id %}" class="btn btn-success">Add to Cart</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr>
+    <h4>Customer Reviews</h4>
+    {% for review in reviews %}
+        <div>
+            <strong>{{ review.user.username }}</strong> - {{ review.rating }}/5
+            <p>{{ review.comment }}</p>
+            <small>{{ review.created }}</small>
+        </div>
+    {% empty %}
+        <p>No reviews yet.</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+    <form method="post">
+        {% csrf_token %}
+        <label for="rating">Rating:</label>
+        <select name="rating" id="rating">
+            {% for i in "12345" %}
+            <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+        </select>
+        <label for="comment">Comment:</label>
+        <textarea name="comment" id="comment" rows="3"></textarea>
+        <button type="submit" class="btn btn-primary mt-2">Submit Review</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

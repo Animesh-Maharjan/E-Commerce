@@ -1,0 +1,451 @@
+:root {
+  /* Modern E-commerce Color Palette */
+  --bs-primary: #1a365d;
+  --bs-primary-light: #2d4a6b;
+  --bs-primary-dark: #0f2642;
+  
+  --bs-secondary: #e53e3e;
+  --bs-secondary-light: #f56565;
+  
+  --bs-success: #38a169;
+  --bs-success-light: #48bb78;
+  
+  --bs-danger: #e53e3e;
+  
+  /* Neutral Colors */
+  --bs-body-bg: #f8fafc;
+  --bs-body-color: #2d3748;
+  --bs-text-muted: #718096;
+  --bs-border-color: #e2e8f0;
+  
+  /* Card and Surface Colors */
+  --bs-card-bg: #ffffff;
+  --bs-gray-50: #f7fafc;
+  --bs-gray-100: #edf2f7;
+  --bs-gray-900: #1a202c;
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+}
+
+/* Navigation Styles */
+.navbar {
+  background: var(--bs-primary) !important;
+  box-shadow: 0 2px 10px rgba(26, 54, 93, 0.15);
+  padding: 1rem 0;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: white !important;
+}
+
+.navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  margin: 0 0.25rem;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-radius: 0.75rem;
+}
+
+/* Button Styles */
+.btn {
+  border-radius: 25px;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background: var(--bs-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--bs-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(26, 54, 93, 0.3);
+}
+
+.btn-success {
+  background: var(--bs-secondary);
+  color: white;
+}
+
+.btn-success:hover {
+  background: var(--bs-secondary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(229, 62, 62, 0.3);
+}
+
+.btn-secondary {
+  background: var(--bs-secondary);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: var(--bs-secondary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(229, 62, 62, 0.4);
+}
+
+.btn-outline-light {
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+  border-radius: 25px;
+  font-weight: 500;
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: white;
+  transform: translateY(-2px);
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 20px;
+}
+
+/* Card Styles */
+.card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  background-color: var(--bs-card-bg);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+  height: 250px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--bs-primary);
+}
+
+.card-text {
+  color: var(--bs-text-muted);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4rem 0;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  font-weight: 300;
+  margin-bottom: 1rem;
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+.hero-section .btn {
+  background: var(--bs-secondary);
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 50px;
+}
+
+.hero-section .btn:hover {
+  background: var(--bs-secondary-light);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(229, 62, 62, 0.4);
+}
+
+/* Product Grid */
+.product-grid {
+  gap: 2rem;
+}
+
+.product-card {
+  position: relative;
+}
+
+.product-price {
+  color: var(--bs-secondary);
+  font-weight: 700;
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-stock {
+  color: var(--bs-text-muted);
+  font-size: 0.875rem;
+}
+
+/* Container and Sections */
+.container {
+  max-width: 1200px;
+}
+
+.featured {
+  padding: 4rem 0;
+  background: var(--bs-gray-50);
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  color: var(--bs-primary);
+  font-weight: 300;
+}
+
+/* Category Sidebar */
+.category-sidebar {
+  background: var(--bs-card-bg);
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.category-link {
+  color: var(--bs-body-color);
+  text-decoration: none;
+  padding: 0.75rem 0;
+  display: block;
+  border-bottom: 1px solid var(--bs-border-color);
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.category-link:hover {
+  color: var(--bs-primary);
+  padding-left: 0.5rem;
+}
+
+/* List Group Styles */
+.list-group-item {
+  border: none;
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 0;
+}
+
+.list-group-item a {
+  color: var(--bs-body-color);
+  text-decoration: none;
+  padding: 0.75rem 0;
+  display: block;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.list-group-item a:hover {
+  color: var(--bs-primary);
+  padding-left: 0.5rem;
+}
+
+/* Form Styles */
+.form-control {
+  border: 2px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+}
+
+.form-select {
+  border: 2px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+/* Footer */
+.footer {
+  background: var(--bs-gray-900);
+  color: white;
+  padding: 3rem 0 1rem 0;
+  margin-top: 4rem;
+}
+
+.footer h5, .footer h6 {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.footer a {
+  color: #cbd5e0;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer a:hover {
+  color: white;
+}
+
+.footer .text-muted {
+  color: #a0aec0 !important;
+}
+
+/* Table Styles */
+.table {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.table th {
+  background: var(--bs-gray-50);
+  border: none;
+  font-weight: 600;
+  color: var(--bs-primary);
+}
+
+.table td {
+  border: none;
+  border-bottom: 1px solid var(--bs-border-color);
+  vertical-align: middle;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.2s; }
+.card:nth-child(4) { animation-delay: 0.3s; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 0;
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Additional Modern Touches */
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+.shadow-sm {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.border-0 {
+  border: none !important;
+}
+
+.rounded {
+  border-radius: 0.75rem !important;
+}
+
+/* Custom spacing */
+.py-4 {
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 2rem !important;
+}
+
+.mt-4 {
+  margin-top: 2rem !important;
+}

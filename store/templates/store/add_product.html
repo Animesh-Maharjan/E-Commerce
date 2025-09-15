@@ -1,0 +1,47 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Add Product{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add Product</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label>Name</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Slug</label>
+            <input type="text" name="slug" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Description</label>
+            <textarea name="description" class="form-control" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label>Price</label>
+            <input type="number" name="price" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Stock</label>
+            <input type="number" name="stock" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Category</label>
+            <select name="category" class="form-control">
+                <option value="">Select Category</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="new_category" class="form-control mt-2" placeholder="Or add new category">
+        </div>
+        <div class="mb-3">
+            <label>Product Image</label>
+            <input type="file" name="image" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-success">Add Product</button>
+    </form>
+</div>
+{% endblock %}

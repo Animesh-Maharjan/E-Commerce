@@ -1,0 +1,32 @@
+{% extends 'base/base.html' %}
+
+{% block title %}All Reviews{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>All Reviews for Your Products</h2>
+    <a href="{% url 'seller-products' %}" class="btn btn-secondary mb-3">← Back to My Products</a>
+
+    {% if reviews %}
+        {% for review in reviews %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">
+                    {{ review.customer.username }} on <strong>{{ review.product.name }}</strong> - {{ review.rating }}/5
+                </h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ review.created|date:"M d, Y H:i" }}</h6>
+                <p class="card-text">{{ review.comment }}</p>
+
+                {% if review.reply %}
+                    <p><strong>Your reply:</strong> {{ review.reply }}</p>
+                {% else %}
+                    <p class="text-muted">No reply yet. To reply, go to <a href="{% url 'seller-reviews' review.product.id %}">product reviews</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No reviews for your products yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

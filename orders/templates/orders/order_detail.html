@@ -1,0 +1,50 @@
+{% extends 'base/base.html' %}
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Order #{{ order.id }}</h1>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Order Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Order Date:</strong> {{ order.order_date|date:"F d, Y" }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-warning">{{ order.get_status_display }}</span>
+                    </p>
+                    <p><strong>Total:</strong> ${{ order.total_amount }}</p>
+                    <p><strong>Shipping Address:</strong><br>{{ order.shipping_address }}</p>
+                    <p><strong>Phone:</strong> {{ order.phone_number }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Order Items</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in order.items.all %}
+                    <div class="mb-3">
+                        <h6>{{ item.product.name }}</h6>
+                        <p>Quantity: {{ item.quantity }} | Price: ${{ item.price }}</p>
+                        <p><strong>Subtotal: ${{ item.total_price }}</strong></p>
+                    </div>
+                    <hr>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'order-list' %}" class="btn btn-secondary">Back to Orders</a>
+        <a href="{% url 'store-shop' %}" class="btn btn-primary">Continue Shopping</a>
+    </div>
+</div>
+{% endblock %}
