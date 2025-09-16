@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'orders',
     'store',
     'accounts',
+    'payments',
+    'ml_analytics',  # ML sentiment analysis app
 ]
 
 MIDDLEWARE = [

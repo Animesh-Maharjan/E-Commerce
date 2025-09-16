@@ -1,0 +1,298 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Sentiment Analysis{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-box"></i> {{ product.name }} - Sentiment Analysis</h1>
+                <a href="{% url 'ml_analytics:sentiment-dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 150px;">
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h4>{{ product.name }}</h4>
+                            <p class="text-muted">{{ product.description|truncatewords:20 }}</p>
+                            <p><strong>Price:</strong> ${{ product.price }}</p>
+                            <p><strong>Category:</strong> {{ product.category.name }}</p>
+                            <p><strong>Stock:</strong> {{ product.stock_quantity }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6><i class="bi bi-graph-up"></i> Overall Sentiment</h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if total_reviews > 0 %}
+                        <div class="mb-3">
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-star-fill"></i> {{ avg_rating|floatformat:1 }}
+                            </span>
+                            <span class="ms-2">{{ total_reviews }} review{{ total_reviews|pluralize }}</span>
+                        </div>
+                        
+                        {% if avg_sentiment_score > 0.3 %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-emoji-smile" style="font-size: 2rem;"></i>
+                                <h5>Positive</h5>
+                                <p>Score: {{ avg_sentiment_score|floatformat:2 }}</p>
+                            </div>
+                        {% elif avg_sentiment_score < -0.3 %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-emoji-frown" style="font-size: 2rem;"></i>
+                                <h5>Negative</h5>
+                                <p>Score: {{ avg_sentiment_score|floatformat:2 }}</p>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="bi bi-emoji-neutral" style="font-size: 2rem;"></i>
+                                <h5>Neutral</h5>
+                                <p>Score: {{ avg_sentiment_score|floatformat:2 }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Sentiment Distribution -->
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: {{ positive_percentage }}%"></div>
+                            <div class="progress-bar bg-warning" style="width: {{ neutral_percentage }}%"></div>
+                            <div class="progress-bar bg-danger" style="width: {{ negative_percentage }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-success">{{ positive_percentage }}%</small>
+                            <small class="text-warning">{{ neutral_percentage }}%</small>
+                            <small class="text-danger">{{ negative_percentage }}%</small>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <p>No sentiment data available yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sentiment Statistics Cards -->
+    {% if total_reviews > 0 %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h3>{{ positive_count }}</h3>
+                    <p class="mb-0">Positive Reviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h3>{{ neutral_count }}</h3>
+                    <p class="mb-0">Neutral Reviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body text-center">
+                    <h3>{{ negative_count }}</h3>
+                    <p class="mb-0">Negative Reviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h3>{{ total_reviews }}</h3>
+                    <p class="mb-0">Total Reviews</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Individual Reviews with Sentiment -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-chat-dots"></i> Reviews with Sentiment Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews_with_sentiment %}
+                        {% for review in reviews_with_sentiment %}
+                        <div class="border-bottom pb-3 mb-4">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6>{{ review.customer.username }}</h6>
+                                            <div class="rating mb-2">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= review.rating %}
+                                                        <i class="bi bi-star-fill text-warning"></i>
+                                                    {% else %}
+                                                        <i class="bi bi-star text-muted"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="ms-2">{{ review.rating }}/5</span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    <p class="mb-3">{{ review.comment }}</p>
+                                    
+                                    {% if review.reply %}
+                                        <div class="alert alert-light">
+                                            <strong>Your Reply:</strong>
+                                            <p class="mb-0">{{ review.reply }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6>Sentiment Analysis</h6>
+                                            
+                                            <!-- Sentiment Label -->
+                                            <div class="mb-2">
+                                                <span class="badge bg-{{ review.reviewsentiment.sentiment_color_class }}">
+                                                    <i class="{{ review.reviewsentiment.sentiment_icon }}"></i>
+                                                    {{ review.reviewsentiment.sentiment_label|title }}
+                                                </span>
+                                                <small class="text-muted ms-2">
+                                                    Confidence: {{ review.reviewsentiment.confidence_score|floatformat:2 }}
+                                                </small>
+                                            </div>
+                                            
+                                            <!-- Sentiment Score -->
+                                            <div class="mb-2">
+                                                <small class="text-muted">Sentiment Score:</small>
+                                                <div class="d-flex align-items-center">
+                                                    {% if review.reviewsentiment.sentiment_score > 0 %}
+                                                        <span class="text-success">{{ review.reviewsentiment.sentiment_score|floatformat:2 }}</span>
+                                                    {% elif review.reviewsentiment.sentiment_score < 0 %}
+                                                        <span class="text-danger">{{ review.reviewsentiment.sentiment_score|floatformat:2 }}</span>
+                                                    {% else %}
+                                                        <span class="text-muted">{{ review.reviewsentiment.sentiment_score|floatformat:2 }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Probability Breakdown -->
+                                            <div class="mb-2">
+                                                <small class="text-muted">Probability Breakdown:</small>
+                                                <div class="progress mb-1" style="height: 8px;">
+                                                    <div class="progress-bar bg-success" style="width: {{ review.reviewsentiment.positive_score|floatformat:0 }}%"></div>
+                                                    <div class="progress-bar bg-warning" style="width: {{ review.reviewsentiment.neutral_score|floatformat:0 }}%"></div>
+                                                    <div class="progress-bar bg-danger" style="width: {{ review.reviewsentiment.negative_score|floatformat:0 }}%"></div>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <small class="text-success">{{ review.reviewsentiment.positive_score|floatformat:1 }}%</small>
+                                                    <small class="text-warning">{{ review.reviewsentiment.neutral_score|floatformat:1 }}%</small>
+                                                    <small class="text-danger">{{ review.reviewsentiment.negative_score|floatformat:1 }}%</small>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Analysis Date -->
+                                            <small class="text-muted">
+                                                Analyzed: {{ review.reviewsentiment.analyzed_at|date:"M d, Y" }}
+                                            </small>
+                                            
+                                            <!-- Re-analyze Button -->
+                                            <div class="mt-2">
+                                                <button class="btn btn-sm btn-outline-secondary reanalyze-btn" 
+                                                        data-review-id="{{ review.id }}">
+                                                    <i class="bi bi-arrow-clockwise"></i> Re-analyze
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center">
+                            <i class="bi bi-chat-dots" style="font-size: 3rem; color: #ccc;"></i>
+                            <p class="text-muted">No reviews with sentiment analysis found for this product.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // CSRF token for AJAX requests
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Re-analyze individual reviews
+    document.querySelectorAll('.reanalyze-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const reviewId = this.dataset.reviewId;
+            const originalText = this.innerHTML;
+            
+            this.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Analyzing...';
+            this.disabled = true;
+            
+            fetch(`{% url "ml_analytics:reanalyze-review" 0 %}`.replace('0', reviewId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Sentiment analysis updated!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+                this.innerHTML = originalText;
+                this.disabled = false;
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    });
+});
+</script>
+
+<!-- Add CSRF token for AJAX -->
+{% csrf_token %}
+{% endblock %}

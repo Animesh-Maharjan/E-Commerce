@@ -4,37 +4,390 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Welcome, {{ user.username }}!</h2>
-    <div class="row mt-4">
-        <!-- Sidebar -->
-        <div class="col-md-3">
-            <div class="list-group">
-                <a href="{% url 'add-product' %}" class="list-group-item list-group-item-action">Add New Product</a>
-                <a href="{% url 'seller-products' %}" class="list-group-item list-group-item-action">My Products</a>
-                <a href="{% url 'all-seller-reviews' %}" class="list-group-item list-group-item-action">All Reviews</a>
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Seller Dashboard - {{ user.first_name|default:user.username }}</h2>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 bg-primary">
+                <div class="card-body text-white" style="background-color: rgb(219,219,219);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="card-title fw-bold mb-1">{{ total_products }}</h3>
+                            <p class="card-text mb-0 opacity-90">Total Products</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-box-seam fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 bg-success">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="card-title fw-bold mb-1">{{ active_products }}</h3>
+                            <p class="card-text mb-0 opacity-90">Active Products</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 bg-warning">
+                <div class="card-body text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="card-title fw-bold mb-1">{{ low_stock_products }}</h3>
+                            <p class="card-text mb-0 text-dark opacity-75">Low Stock</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-exclamation-triangle fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 bg-info">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="card-title fw-bold mb-1">${{ total_revenue|floatformat:2 }}</h3>
+                            <p class="card-text mb-0 opacity-90">Total Revenue</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-currency-dollar fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white border-0">
+                    <h5 class="card-title mb-0"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'add-product' %}" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-start">
+                            <i class="bi bi-plus-circle me-3 fs-5"></i>
+                            <span>Add New Product</span>
+                        </a>
+                        <a href="{% url 'seller-products' %}" class="btn btn-outline-success btn-lg d-flex align-items-center justify-content-start">
+                            <i class="bi bi-box-seam me-3 fs-5"></i>
+                            <span>My Products</span>
+                        </a>
+                        <a href="{% url 'all-seller-reviews' %}" class="btn btn-outline-info btn-lg d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-star me-3 fs-5"></i>
+                                <span>All Reviews</span>
+                            </div>
+                            {% if total_reviews > 0 %}
+                                <span class="badge bg-info rounded-pill">{{ total_reviews }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'ml_analytics:sentiment-dashboard' %}" class="btn btn-outline-warning btn-lg d-flex align-items-center justify-content-start">
+                            <i class="bi bi-graph-up me-3 fs-5"></i>
+                            <span>Sentiment Analysis</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Main content -->
-        <div class="col-md-9">
-            <h4>Dashboard Overview</h4>
-            <p>Here you can manage your products and view customer reviews.</p>
+        <!-- Recent Products -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="bi bi-box me-2"></i>Recent Products</h5>
+                    {% if avg_rating > 0 %}
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-star-fill text-warning"></i> {{ avg_rating }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if recent_products %}
+                        <div class="list-group list-group-flush">
+                            {% for product in recent_products %}
+                            <div class="list-group-item border-0 px-0 py-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold text-primary">{{ product.name }}</h6>
+                                        <p class="mb-2 text-muted small">${{ product.price }} | Stock: {{ product.stock }}</p>
+                                        <span class="badge bg-{% if product.available %}success{% else %}secondary{% endif %} me-2">
+                                            {% if product.available %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'update-product' product.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil me-1"></i>Edit
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-box-seam fs-1 text-muted mb-3"></i>
+                            <p class="text-muted mb-3">No products yet.</p>
+                            <a href="{% url 'add-product' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Add your first product!
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
-            <hr>
-            <h5>Recent Products</h5>
-            {% if recent_products %}
-            <ul class="list-group">
-                {% for product in recent_products %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ product.name }}
-                    <a href="{% url 'seller-reviews' %}" class="btn btn-sm btn-info">View Reviews</a>
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-                <p>No products added yet.</p>
-            {% endif %}
+        <!-- Recent Reviews -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-warning text-dark border-0">
+                    <h5 class="card-title mb-0"><i class="bi bi-star me-2"></i>Recent Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_reviews %}
+                        <div class="list-group list-group-flush">
+                            {% for review in recent_reviews %}
+                            <div class="list-group-item border-0 px-0 py-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold text-primary">{{ review.product.name }}</h6>
+                                        <p class="mb-2 text-muted small">by {{ review.customer.username }}</p>
+                                        <div class="d-flex align-items-center mb-2">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star text-muted"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <span class="badge bg-primary ms-2">{{ review.rating }}/5</span>
+                                        </div>
+                                        {% if review.comment %}
+                                            <p class="mb-1 small text-dark">{{ review.comment|truncatewords:10 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ review.created|timesince }} ago</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-star fs-1 text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No reviews yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    {% if seller_orders %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white border-0">
+                    <h5 class="card-title mb-0"><i class="bi bi-basket me-2"></i>Recent Orders Containing Your Products</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="fw-bold">Order ID</th>
+                                    <th class="fw-bold">Product</th>
+                                    <th class="fw-bold">Quantity</th>
+                                    <th class="fw-bold">Price</th>
+                                    <th class="fw-bold">Date</th>
+                                    <th class="fw-bold">Status</th>
+                                    <th class="fw-bold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order_item in seller_orders %}
+                                <tr>
+                                    <td>#{{ order_item.order.id }}</td>
+                                    <td>{{ order_item.product.name }}</td>
+                                    <td>{{ order_item.quantity }}</td>
+                                    <td>${{ order_item.price|floatformat:2 }}</td>
+                                    <td>{{ order_item.order.order_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if order_item.order.status == 'delivered' %}success{% elif order_item.order.status == 'shipped' %}info{% elif order_item.order.status == 'confirmed' %}info{% elif order_item.order.status == 'pending' %}warning{% elif order_item.order.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                            {{ order_item.order.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'seller-order-detail' order_item.order.id %}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if order_item.order.status == 'pending' %}
+                                                <button type="button" 
+                                                        class="btn btn-success btn-sm confirm-order-btn"
+                                                        data-order-id="{{ order_item.order.id }}">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            {% endif %}
+                                            {% if order_item.order.can_be_cancelled_by_seller %}
+                                                <button type="button" 
+                                                        class="btn btn-danger btn-sm cancel-order-btn"
+                                                        data-order-id="{{ order_item.order.id }}">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <a href="{% url 'seller-orders' %}" class="btn btn-primary">
+                        <i class="bi bi-eye me-2"></i>View All Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmOrderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to confirm this order?</p>
+                <p><small class="text-muted">This action will notify the customer that their order has been confirmed.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmOrderBtn">
+                    <i class="bi bi-check"></i> Confirm Order
+                </button>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                <p>Are you sure you want to cancel this order?</p>
+                <p><small class="text-muted">This will cancel the entire order and notify the customer.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Order</button>
+                <button type="button" class="btn btn-danger" id="cancelOrderBtn">
+                    <i class="bi bi-times"></i> Cancel Order
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    let currentOrderId = null;
+    
+    // Handle confirm button click
+    $('.confirm-order-btn').click(function() {
+        currentOrderId = $(this).data('order-id');
+        $('#confirmOrderModal').modal('show');
+    });
+    
+    // Handle cancel button click
+    $('.cancel-order-btn').click(function() {
+        currentOrderId = $(this).data('order-id');
+        $('#cancelOrderModal').modal('show');
+    });
+    
+    // Handle modal confirm button
+    $('#confirmOrderBtn').click(function() {
+        if (currentOrderId) {
+            $.ajax({
+                url: '/orders/confirm-order/' + currentOrderId + '/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while confirming the order.');
+                }
+            });
+        }
+        $('#confirmOrderModal').modal('hide');
+    });
+    
+    // Handle modal cancel button
+    $('#cancelOrderBtn').click(function() {
+        if (currentOrderId) {
+            $.ajax({
+                url: '/orders/seller-cancel-order/' + currentOrderId + '/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while cancelling the order.');
+                }
+            });
+        }
+        $('#cancelOrderModal').modal('hide');
+    });
+});
+</script>
+
+{% csrf_token %}
 {% endblock %}

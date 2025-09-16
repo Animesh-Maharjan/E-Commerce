@@ -1,0 +1,399 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Sentiment Analysis Dashboard{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-graph-up"></i> Sentiment Analysis Dashboard</h1>
+                <div>
+                    <button id="analyzeAllBtn" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-cpu"></i> Analyze All Reviews
+                    </button>
+                    <a href="{% url 'seller-dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Sentiment Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_reviews }}</h4>
+                            <p class="mb-0">Total Reviews</p>
+                        </div>
+                        <i class="bi bi-chat-dots" style="font-size: 2rem; opacity: 0.7;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ positive_percentage }}%</h4>
+                            <p class="mb-0">Positive Reviews</p>
+                            <small>({{ positive_count }} reviews)</small>
+                        </div>
+                        <i class="bi bi-emoji-smile" style="font-size: 2rem; opacity: 0.7;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ neutral_percentage }}%</h4>
+                            <p class="mb-0">Neutral Reviews</p>
+                            <small>({{ neutral_count }} reviews)</small>
+                        </div>
+                        <i class="bi bi-emoji-neutral" style="font-size: 2rem; opacity: 0.7;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ negative_percentage }}%</h4>
+                            <p class="mb-0">Negative Reviews</p>
+                            <small>({{ negative_count }} reviews)</small>
+                        </div>
+                        <i class="bi bi-emoji-frown" style="font-size: 2rem; opacity: 0.7;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Sentiment Score -->
+    {% if total_reviews > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="bi bi-speedometer2"></i> Overall Sentiment Score</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        {% if sentiment_status == 'positive' %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-emoji-smile" style="font-size: 2rem;"></i>
+                                <h4>Positive Sentiment</h4>
+                                <p>{{ sentiment_message }}</p>
+                                <p><strong>Score: {{ avg_sentiment_score|floatformat:2 }}</strong></p>
+                            </div>
+                        {% elif sentiment_status == 'negative' %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-emoji-frown" style="font-size: 2rem;"></i>
+                                <h4>Negative Sentiment</h4>
+                                <p>{{ sentiment_message }}</p>
+                                <p><strong>Score: {{ avg_sentiment_score|floatformat:2 }}</strong></p>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="bi bi-emoji-neutral" style="font-size: 2rem;"></i>
+                                <h4>Neutral Sentiment</h4>
+                                <p>{{ sentiment_message }}</p>
+                                <p><strong>Score: {{ avg_sentiment_score|floatformat:2 }}</strong></p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Sentiment Progress Bar -->
+                    <div class="mt-3">
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: {{ positive_percentage }}%"></div>
+                            <div class="progress-bar bg-warning" style="width: {{ neutral_percentage }}%"></div>
+                            <div class="progress-bar bg-danger" style="width: {{ negative_percentage }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-success"><strong>{{ positive_percentage }}% Positive</strong></small>
+                            <small class="text-warning"><strong>{{ neutral_percentage }}% Neutral</strong></small>
+                            <small class="text-danger"><strong>{{ negative_percentage }}% Negative</strong></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Product-wise Sentiment Analysis -->
+    {% if product_sentiment_data %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5><i class="bi bi-box"></i> Product Sentiment Analysis</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Reviews</th>
+                                    <th>Avg Rating</th>
+                                    <th>Sentiment Score</th>
+                                    <th>Sentiment Distribution</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in product_sentiment_data %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.product.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">${{ item.product.price }}</small>
+                                    </td>
+                                    <td>{{ item.total_reviews }}</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-star-fill"></i> {{ item.avg_rating|floatformat:1 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if item.avg_sentiment_score > 0.3 %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-emoji-smile"></i> {{ item.avg_sentiment_score|floatformat:2 }}
+                                            </span>
+                                        {% elif item.avg_sentiment_score < -0.3 %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-emoji-frown"></i> {{ item.avg_sentiment_score|floatformat:2 }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-emoji-neutral"></i> {{ item.avg_sentiment_score|floatformat:2 }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 15px; width: 120px;">
+                                            <div class="progress-bar bg-success" style="width: {{ item.positive_percentage }}%"></div>
+                                            <div class="progress-bar bg-warning" style="width: {{ item.neutral_percentage }}%"></div>
+                                            <div class="progress-bar bg-danger" style="width: {{ item.negative_percentage }}%"></div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ item.positive_percentage }}% / {{ item.neutral_percentage }}% / {{ item.negative_percentage }}%
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'ml_analytics:product-sentiment-detail' item.product.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Recent Negative Reviews (Need Attention) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="bi bi-exclamation-triangle"></i> Recent Negative Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_negative_reviews %}
+                        {% for review in recent_negative_reviews %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong>{{ review.product.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">by {{ review.customer.username }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-danger">
+                                        {{ review.reviewsentiment.sentiment_emoji }} {{ review.reviewsentiment.confidence_score|floatformat:2 }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">{{ review.created_at|date:"M d" }}</small>
+                                </div>
+                            </div>
+                            <p class="mb-2">{{ review.comment|truncatewords:20 }}</p>
+                            <div class="rating mb-2">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    {% else %}
+                                        <i class="bi bi-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary reanalyze-btn" data-review-id="{{ review.id }}">
+                                <i class="bi bi-arrow-clockwise"></i> Re-analyze
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-success">
+                            <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                            <p>No recent negative reviews! Keep up the good work!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Positive Reviews (Showcase) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-award"></i> Top Positive Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_positive_reviews %}
+                        {% for review in top_positive_reviews %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong>{{ review.product.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">by {{ review.customer.username }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-success">
+                                        {{ review.reviewsentiment.sentiment_emoji }} {{ review.reviewsentiment.confidence_score|floatformat:2 }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">{{ review.created_at|date:"M d" }}</small>
+                                </div>
+                            </div>
+                            <p class="mb-2">{{ review.comment|truncatewords:20 }}</p>
+                            <div class="rating">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    {% else %}
+                                        <i class="bi bi-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="bi bi-chat-dots" style="font-size: 2rem;"></i>
+                            <p>No highly positive reviews yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Analyzing reviews...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // CSRF token for AJAX requests
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Analyze all reviews button
+    document.getElementById('analyzeAllBtn').addEventListener('click', function() {
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+        
+        fetch('{% url "ml_analytics:analyze-all-reviews" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingModal.hide();
+            if (data.success) {
+                alert(`Successfully analyzed ${data.analyzed_count} reviews!`);
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            loadingModal.hide();
+            alert('Error analyzing reviews: ' + error);
+        });
+    });
+    
+    // Re-analyze individual reviews
+    document.querySelectorAll('.reanalyze-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const reviewId = this.dataset.reviewId;
+            const originalText = this.innerHTML;
+            
+            this.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Analyzing...';
+            this.disabled = true;
+            
+            fetch(`{% url "ml_analytics:reanalyze-review" 0 %}`.replace('0', reviewId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Sentiment analysis updated!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+                this.innerHTML = originalText;
+                this.disabled = false;
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    });
+});
+</script>
+
+<!-- Add CSRF token for AJAX -->
+{% csrf_token %}
+{% endblock %}

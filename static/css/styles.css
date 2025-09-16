@@ -39,6 +39,15 @@ body {
   line-height: 1.6;
 }
 
+/* Layout helpers for sticky footer */
+html, body {
+  height: 100%;
+}
+
+.flex-fill {
+  flex: 1 1 auto;
+}
+
 /* Navigation Styles */
 .navbar {
   background: var(--bs-primary) !important;
@@ -323,6 +332,18 @@ body {
   padding: 3rem 0 1rem 0;
   margin-top: 4rem;
 }
+
+/* Make footer full-width and stick to bottom on short pages */
+.footer {
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  /* ensure footer content has breathing room */
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+/* Note: layout for footer placement kept simple to avoid interfering with container spacing. */
 
 .footer h5, .footer h6 {
   color: white;

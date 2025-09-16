@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include('store.urls')),
     path('cart/', include('cart.urls')),
     path('orders/', include('orders.urls')),
+    path('ml/', include('ml_analytics.urls')),  # ML analytics URLs
 ]
 
 if settings.DEBUG:

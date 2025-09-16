@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.db.models import Avg
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -23,6 +24,12 @@ class Product(models.Model):
     available = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def average_rating(self):
+        """Calculate average rating from all reviews"""
+        avg = self.reviews.aggregate(avg_rating=Avg('rating'))['avg_rating']
+        return round(avg, 1) if avg else 0.0
+
     def __str__(self):
         return self.name
 
@@ -34,6 +41,7 @@ class Review(models.Model):
     )
     rating = models.PositiveSmallIntegerField(default=1)
     comment = models.TextField()
+    reply = models.TextField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

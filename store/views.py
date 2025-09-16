@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from store.models import Product, Category, Review
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.db.models import Count
 
 def home(request):
     products = Product.objects.filter(available=True)[:6]
@@ -18,12 +19,39 @@ def shop(request):
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
     reviews = product.reviews.all()
+    
+    # Get sentiment analysis data
+    sentiment_data = {}
+    reviews_with_sentiment = reviews.filter(reviewsentiment__isnull=False)
+    if reviews_with_sentiment.exists():
+        sentiment_counts = reviews_with_sentiment.values('reviewsentiment__sentiment_label').annotate(
+            count=Count('id')
+        )
+        total_sentiment_reviews = reviews_with_sentiment.count()
+        
+        for item in sentiment_counts:
+            label = item['reviewsentiment__sentiment_label']
+            count = item['count']
+            percentage = round((count / total_sentiment_reviews) * 100, 1) if total_sentiment_reviews > 0 else 0
+            sentiment_data[label] = {
+                'count': count,
+                'percentage': percentage
+            }
+    
     if request.method == "POST" and request.user.is_authenticated:
         rating = request.POST.get('rating')
         comment = request.POST.get('comment')
-        Review.objects.create(product=product, user=request.user, rating=rating, comment=comment)
+        # The Review model expects `customer` (not `user`)
+        Review.objects.create(product=product, customer=request.user, rating=rating, comment=comment)
         return redirect('product-detail', slug=slug)
-    return render(request, 'store/product_detail.html', {'product': product, 'reviews': reviews})
+    
+    context = {
+        'product': product, 
+        'reviews': reviews,
+        'sentiment_data': sentiment_data,
+        'reviews_with_sentiment': reviews_with_sentiment
+    }
+    return render(request, 'store/product_detail.html', context)
 
 @login_required
 def add_product(request):

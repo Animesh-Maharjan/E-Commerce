@@ -7,9 +7,11 @@
     <div class="row">
         <div class="col-md-6">
             {% if product.image %}
-            <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}">
+            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
             {% else %}
-            <img src="https://via.placeholder.com/500x400" class="img-fluid" alt="No Image">
+            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+            </div>
             {% endif %}
         </div>
         <div class="col-md-6">
@@ -17,15 +19,79 @@
             <p>{{ product.description }}</p>
             <p><strong>Price:</strong> ${{ product.price }}</p>
             <p><strong>Stock:</strong> 
-                {% if product.stock > 0 %}
-                    {{ product.stock }} available
+                {% if product.stock_quantity > 0 %}
+                    {{ product.stock_quantity }} available
                 {% else %}
                     Out of stock
                 {% endif %}
             </p>
 
-            {% if user.is_authenticated and user.role == 'customer' and product.stock > 0 %}
-            <a href="{% url 'add-to-cart' product.id %}" class="btn btn-success">Add to Cart</a>
+            <!-- Rating and Sentiment Display -->
+            <div class="mb-3">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="me-3">
+                        {% if product.average_rating > 0 %}
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-star-fill"></i> {{ product.average_rating|floatformat:1 }}
+                            </span>
+                            <small class="text-muted">({{ reviews.count }} review{{ reviews.count|pluralize }})</small>
+                        {% else %}
+                            <span class="text-muted">No reviews yet</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Sentiment Analysis Display -->
+                {% if sentiment_data %}
+                    <div class="sentiment-summary mb-3">
+                        <h6><i class="bi bi-graph-up"></i> Customer Sentiment Analysis:</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="progress mb-2" style="height: 20px;">
+                                    {% if sentiment_data.positive %}
+                                        <div class="progress-bar bg-success" 
+                                             style="width: {{ sentiment_data.positive.percentage }}%" 
+                                             title="Positive: {{ sentiment_data.positive.percentage }}%">
+                                        </div>
+                                    {% endif %}
+                                    {% if sentiment_data.neutral %}
+                                        <div class="progress-bar bg-secondary" 
+                                             style="width: {{ sentiment_data.neutral.percentage }}%" 
+                                             title="Neutral: {{ sentiment_data.neutral.percentage }}%">
+                                        </div>
+                                    {% endif %}
+                                    {% if sentiment_data.negative %}
+                                        <div class="progress-bar bg-danger" 
+                                             style="width: {{ sentiment_data.negative.percentage }}%" 
+                                             title="Negative: {{ sentiment_data.negative.percentage }}%">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-success">
+                                        <i class="bi bi-emoji-smile"></i> Positive 
+                                        ({{ sentiment_data.positive.count|default:0 }})
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="bi bi-emoji-neutral"></i> Neutral 
+                                        ({{ sentiment_data.neutral.count|default:0 }})
+                                    </small>
+                                    <small class="text-danger">
+                                        <i class="bi bi-emoji-frown"></i> Negative 
+                                        ({{ sentiment_data.negative.count|default:0 }})
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <small class="text-muted">{{ reviews_with_sentiment.count }} review{{ reviews_with_sentiment.count|pluralize }} analyzed</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if user.is_authenticated and user.role == 'customer' and product.stock_quantity > 0 %}
+            <a href="{% url 'cart:add-to-cart' product.id %}" class="btn btn-success">Add to Cart</a>
             {% endif %}
         </div>
     </div>
@@ -33,28 +99,106 @@
     <hr>
     <h4>Customer Reviews</h4>
     {% for review in reviews %}
-        <div>
-            <strong>{{ review.user.username }}</strong> - {{ review.rating }}/5
-            <p>{{ review.comment }}</p>
-            <small>{{ review.created }}</small>
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong>{{ review.customer.username }}</strong>
+                                <div class="rating">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-2">{{ review.rating }}/5</span>
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ review.created|date:"M d, Y" }}</small>
+                        </div>
+                        <p>{{ review.comment }}</p>
+                        {% if review.reply %}
+                        <div class="mt-2 p-2 bg-light rounded">
+                            <strong>Seller reply:</strong>
+                            <p class="mb-0">{{ review.reply }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Sentiment Analysis Display -->
+                    <div class="col-md-4">
+                        {% if review.reviewsentiment %}
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Sentiment Analysis</h6>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-{{ review.reviewsentiment.sentiment_color_class }} me-2">
+                                            <i class="{{ review.reviewsentiment.sentiment_icon }}"></i>
+                                            {{ review.reviewsentiment.sentiment_label|title }}
+                                        </span>
+                                        <small class="text-muted">
+                                            {{ review.reviewsentiment.confidence_score|floatformat:2 }} confidence
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Sentiment breakdown -->
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: {{ review.reviewsentiment.positive_score|floatformat:0 }}%"></div>
+                                        <div class="progress-bar bg-secondary" style="width: {{ review.reviewsentiment.neutral_score|floatformat:0 }}%"></div>
+                                        <div class="progress-bar bg-danger" style="width: {{ review.reviewsentiment.negative_score|floatformat:0 }}%"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-success">{{ review.reviewsentiment.positive_score|floatformat:1 }}%</small>
+                                        <small class="text-muted">{{ review.reviewsentiment.neutral_score|floatformat:1 }}%</small>
+                                        <small class="text-danger">{{ review.reviewsentiment.negative_score|floatformat:1 }}%</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <small class="text-muted">Sentiment analysis pending...</small>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
     {% empty %}
-        <p>No reviews yet.</p>
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No reviews yet. Be the first to review this product!
+        </div>
     {% endfor %}
 
-    {% if user.is_authenticated %}
-    <form method="post">
-        {% csrf_token %}
-        <label for="rating">Rating:</label>
-        <select name="rating" id="rating">
-            {% for i in "12345" %}
-            <option value="{{ i }}">{{ i }}</option>
-            {% endfor %}
-        </select>
-        <label for="comment">Comment:</label>
-        <textarea name="comment" id="comment" rows="3"></textarea>
-        <button type="submit" class="btn btn-primary mt-2">Submit Review</button>
-    </form>
+    {% if user.is_authenticated and user.role == 'customer' %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Write a Review</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating</label>
+                    <select name="rating" id="rating" class="form-select" required>
+                        <option value="">Select Rating</option>
+                        {% for i in "12345" %}
+                        <option value="{{ i }}">{{ i }} star{{ i|pluralize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Comment</label>
+                    <textarea name="comment" id="comment" rows="3" class="form-control" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+        </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

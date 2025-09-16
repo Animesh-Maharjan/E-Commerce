@@ -29,6 +29,7 @@ class Address(models.Model):
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
         ('processing', 'Processing'),
         ('shipped', 'Shipped'),
         ('delivered', 'Delivered'),
@@ -56,6 +57,26 @@ class Order(models.Model):
     @property
     def total_items(self):
         return sum(item.quantity for item in self.items.all())
+    
+    def can_be_cancelled(self):
+        """Check if order can be cancelled by customer or seller"""
+        return self.status in ['pending', 'confirmed']
+    
+    def can_be_cancelled_by_customer(self):
+        """Check if order can be cancelled by customer"""
+        return self.status in ['pending', 'confirmed']
+    
+    def can_be_cancelled_by_seller(self):
+        """Check if order can be cancelled by seller"""
+        return self.status in ['pending', 'confirmed']
+    
+    def cancel_order(self, cancelled_by=None, reason=None):
+        """Cancel the order with optional reason"""
+        if self.can_be_cancelled():
+            self.status = 'cancelled'
+            self.save()
+            return True
+        return False
 
 
 class OrderItem(models.Model):
